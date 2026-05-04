@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-20 text-center">
+    <div class="glass p-10 rounded-3xl">
+        <div id="statusIcon" class="w-20 h-20 bg-gray-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </div>
+        <h2 id="statusTitle" class="text-3xl font-bold text-white mb-4">Verifying...</h2>
+        <p id="statusMsg" class="text-gray-400 mb-8">Please wait while we verify your email address.</p>
+        
+        <a href="/login" class="inline-block bg-red-600 hover:bg-red-700 text-white font-bold px-8 py-3 rounded-xl transition">
+            Go to Login
+        </a>
+    </div>
+</div>
+
+<script>
+    async function verify() {
+        const pathParts = window.location.pathname.split('/');
+        const token = pathParts[pathParts.length - 1];
+        
+        try {
+            const response = await fetch(`/api/v1/users/verify-email/${token}`);
+            const data = await response.json();
+            
+            const icon = document.getElementById('statusIcon');
+            const title = document.getElementById('statusTitle');
+            const msg = document.getElementById('statusMsg');
+            
+            if (response.ok) {
+                icon.className = "w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6";
+                icon.innerHTML = '<svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+                title.innerText = "Verified!";
+                msg.innerText = "Your email has been successfully verified. You can now login.";
+            } else {
+                icon.className = "w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6";
+                icon.innerHTML = '<svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+                title.innerText = "Verification Failed";
+                msg.innerText = data.detail || "The token is invalid or has expired.";
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+    verify();
+</script>
+{% endblock %}

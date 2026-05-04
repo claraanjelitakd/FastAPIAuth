@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-20">
+    <div class="glass p-10 rounded-3xl">
+        <h2 class="text-3xl font-bold text-white mb-2">Create Account</h2>
+        <p class="text-gray-400 mb-8 text-sm">Join us and experience the power of FastAPI.</p>
+        
+        <form id="registerForm" class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-400 mb-2">Full Name</label>
+                <input type="text" id="full_name" required class="w-full bg-[#151515] border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-red-500 outline-none transition">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-400 mb-2">Email Address</label>
+                <input type="email" id="email" required class="w-full bg-[#151515] border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-red-500 outline-none transition">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-400 mb-2">Password</label>
+                <input type="password" id="password" required class="w-full bg-[#151515] border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-red-500 outline-none transition">
+            </div>
+            
+            <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-xl transition shadow-lg shadow-red-900/40">
+                Register
+            </button>
+        </form>
+        
+        <p class="mt-8 text-center text-sm text-gray-500">
+            Already have an account? <a href="/login" class="text-red-500 hover:underline">Sign In</a>
+        </p>
+    </div>
+</div>
+
+<script>
+    document.getElementById('registerForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const body = {
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value,
+            full_name: document.getElementById('full_name').value
+        };
+        
+        try {
+            const response = await fetch('/api/v1/users/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const data = await response.json();
+            
+            if (response.ok) {
+                alert('Registration successful! Please check your email for verification.');
+                window.location.href = '/login';
+            } else {
+                alert(data.detail || 'Registration failed');
+            }
+        } catch (err) {
+            alert('An error occurred');
+        }
+    };
+</script>
+{% endblock %}

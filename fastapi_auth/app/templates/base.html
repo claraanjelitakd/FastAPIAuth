@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title or "FastAPI Auth" }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .bg-dots {
+            background-image: radial-gradient(#333 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-[#0a0a0a] text-gray-200 min-h-screen bg-dots">
+    <nav class="flex justify-between items-center p-6 max-w-7xl mx-auto">
+        <div class="flex items-center space-x-2">
+            <div class="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center font-bold text-white shadow-lg shadow-red-900/20">F</div>
+            <span class="text-xl font-bold tracking-tight text-white">FastAPI <span class="text-red-500 italic">Auth</span></span>
+        </div>
+        <div class="flex space-x-6 text-sm font-medium items-center">
+            <a href="/" class="hover:text-red-500 transition">Welcome</a>
+            <span id="navLinks" class="flex space-x-6 items-center">
+                <!-- Links will be populated by JS -->
+            </span>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto p-6">
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        function updateNav() {
+            const token = localStorage.getItem('token');
+            const navLinks = document.getElementById('navLinks');
+            
+            if (token) {
+                // Fetch user data to check if admin
+                fetch('/api/v1/users/me', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+                .then(res => res.json())
+                .then(user => {
+                    let html = `<a href="/dashboard" class="hover:text-red-500 transition">Dashboard</a>`;
+                    if (user.is_superuser) {
+                        html += `<a href="/admin" class="text-purple-400 hover:text-purple-300 font-bold transition flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"></path></svg>
+                                    Admin
+                                 </a>`;
+                    }
+                    html += `<button onclick="logout()" class="text-gray-400 hover:text-white transition">Logout</button>`;
+                    navLinks.innerHTML = html;
+                })
+                .catch(() => {
+                    localStorage.removeItem('token');
+                    renderGuestLinks();
+                });
+            } else {
+                renderGuestLinks();
+            }
+        }
+
+        function renderGuestLinks() {
+            const navLinks = document.getElementById('navLinks');
+            navLinks.innerHTML = `
+                <a href="/login" class="hover:text-red-500 transition">Login</a>
+                <a href="/register" class="bg-white text-black px-4 py-2 rounded-full hover:bg-gray-200 transition">Register</a>
+            `;
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        }
+
+        updateNav();
+    </script>
+</body>
+</html>
